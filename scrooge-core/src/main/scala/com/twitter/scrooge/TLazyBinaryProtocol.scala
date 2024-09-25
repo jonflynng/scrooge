@@ -183,7 +183,7 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
   override def readFieldBegin(): TField = {
     val tpe: Byte = readByte()
     val id: Short = if (tpe == TType.STOP) 0 else readI16()
-    val finalType = if (tpe == -1) TType.ENUM else tpe
+    val finalType = if (tpe == NEW_ENUM_TYPE_ID) TType.ENUM else tpe
     new TField("", finalType, id)
   }
 
