@@ -123,7 +123,4 @@ trait LazyTProtocol extends TProtocol {
    * Returns: The offset at which the string can be read.
    */
   def offsetSkipBinary(): Int
-
-  def writeEnum(value: Int): Unit
-  def readEnum(): Int
 }

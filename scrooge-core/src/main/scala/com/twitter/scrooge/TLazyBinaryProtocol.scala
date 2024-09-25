@@ -17,7 +17,6 @@ import org.apache.thrift.protocol._
 object TLazyBinaryProtocol {
   private val AnonymousStruct: TStruct = new TStruct()
   private val utf8Charset = Charset.forName("UTF-8")
-  private val OLD_ENUM_TYPE_ID: Byte = 16
   private val NEW_ENUM_TYPE_ID: Byte = -1
 }
 
@@ -32,9 +31,10 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
   }
 
   override def writeFieldBegin(field: TField): Unit = {
+    val typeToWrite = if (field.`type` == TType.ENUM) NEW_ENUM_TYPE_ID else field.`type`
     val buf = transport.getBuffer(3)
     val offset = transport.writerOffset
-    buf(offset) = field.`type`
+    buf(offset) = typeToWrite
     innerWriteI16(buf, offset + 1, field.id)
   }
 
@@ -141,11 +141,6 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
       case uex: UnsupportedEncodingException =>
         throw new TException("JVM DOES NOT SUPPORT UTF-8")
     }
-  }
-
-  override def writeEnum(value: Int): Unit = {
-    writeByte(-1.toByte)
-    writeI32(value)
   }
 
   override def writeBinary(bin: ByteBuffer): Unit = {
@@ -262,15 +257,6 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
       case e: UnsupportedEncodingException =>
         throw new TException("JVM DOES NOT SUPPORT UTF-8")
     }
-
-  override def readEnum(): Int = {
-    val typeId = readByte()
-    if (typeId == NEW_ENUM_TYPE_ID || typeId == OLD_ENUM_TYPE_ID) { // Handle both old and new ENUM identifiers, see PR link for more information.
-      readI32()
-    } else {
-      throw new TException(s"Invalid type for enum: $typeId")
-    }
-  }
 
   override def buffer: Array[Byte] = transport.srcBuf
 
