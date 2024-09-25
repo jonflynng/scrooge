@@ -124,4 +124,6 @@ trait LazyTProtocol extends TProtocol {
    */
   def offsetSkipBinary(): Int
 
+  def writeEnum(value: Int): Unit
+  def readEnum(): Int
 }

@@ -489,6 +489,7 @@ abstract class TemplateGenerator(val resolvedDoc: ResolvedDocument)
       case TDouble => "readDouble"
       case TString => "readString"
       case TBinary => "readBinary"
+      case EnumType(_,_) => "readI32"
       case x => throw new ScroogeInternalException("genProtocolReadMethod#" + t)
     }
     v(getCode(t))

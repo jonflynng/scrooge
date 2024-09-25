@@ -141,6 +141,11 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
     }
   }
 
+  override def writeEnum(value: Int): Unit = {
+    writeByte(-1.toByte)
+    writeI32(value)
+  }
+
   override def writeBinary(bin: ByteBuffer): Unit = {
     val length: Int = bin.limit() - bin.position() - bin.arrayOffset()
     val buf = transport.getBuffer(length + 4)
@@ -176,7 +181,8 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
   override def readFieldBegin(): TField = {
     val tpe: Byte = readByte()
     val id: Short = if (tpe == TType.STOP) 0 else readI16()
-    new TField("", tpe, id)
+    val finalType = if (tpe == -1) TType.ENUM else tpe
+    new TField("", finalType, id)
   }
 
   override def readFieldEnd(): Unit = ()
@@ -254,6 +260,15 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
       case e: UnsupportedEncodingException =>
         throw new TException("JVM DOES NOT SUPPORT UTF-8")
     }
+
+  override def readEnum(): Int = {
+    val typeId = readByte()
+    if (typeId == -1 || typeId == 16) { // Handle both old and new ENUM identifiers, see PR link for more information.
+      readI32()
+    } else {
+      throw new TException(s"Invalid type for enum: $typeId")
+    }
+  }
 
   override def buffer: Array[Byte] = transport.srcBuf
 
