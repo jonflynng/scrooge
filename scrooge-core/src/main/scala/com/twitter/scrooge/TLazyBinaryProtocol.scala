@@ -17,6 +17,8 @@ import org.apache.thrift.protocol._
 object TLazyBinaryProtocol {
   private val AnonymousStruct: TStruct = new TStruct()
   private val utf8Charset = Charset.forName("UTF-8")
+  private val OLD_ENUM_TYPE_ID: Byte = 16
+  private val NEW_ENUM_TYPE_ID: Byte = -1
 }
 
 class TLazyBinaryProtocol(transport: TArrayByteTransport)
@@ -263,7 +265,7 @@ class TLazyBinaryProtocol(transport: TArrayByteTransport)
 
   override def readEnum(): Int = {
     val typeId = readByte()
-    if (typeId == -1 || typeId == 16) { // Handle both old and new ENUM identifiers, see PR link for more information.
+    if (typeId == NEW_ENUM_TYPE_ID || typeId == OLD_ENUM_TYPE_ID) { // Handle both old and new ENUM identifiers, see PR link for more information.
       readI32()
     } else {
       throw new TException(s"Invalid type for enum: $typeId")

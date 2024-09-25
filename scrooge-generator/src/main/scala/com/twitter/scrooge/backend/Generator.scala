@@ -560,6 +560,7 @@ abstract class TemplateGenerator(val resolvedDoc: ResolvedDocument)
       case TDouble => "writeDouble"
       case TString => "writeString"
       case TBinary => "writeBinary"
+      case EnumType(_,_) => "writeI32"
       case x => throw new ScroogeInternalException("protocolWriteMethod#" + t)
     }
     v(getCode(t))
